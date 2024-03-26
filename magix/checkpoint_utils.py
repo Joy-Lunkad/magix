@@ -41,7 +41,9 @@ def load_model_hub(
     # Load model from hub
     with jax.default_device(jax.local_devices(backend="cpu")[0]):
         with Mesh(devices = np.array(jax.local_devices(backend='cpu')[0]).reshape(1,1), axis_names=('data', 'model')):
-            model = model_cls.from_pretrained(model_name, ignore_mismatched_sizes=ignore_mismatched_sizes,from_pt=from_pt, **from_pretrained_kwargs)
+            model = model_cls.from_pretrained(
+                model_name, ignore_mismatched_sizes=ignore_mismatched_sizes,from_pt=from_pt, **from_pretrained_kwargs
+            )
             if not half:
                 model.params = model.to_fp32(model.params)
             else:
