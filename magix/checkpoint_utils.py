@@ -29,6 +29,7 @@ def load_model_hub(
     ignore_mismatched_sizes=True,
     half=False,
     from_pt=True,
+    dummy_config=None,
     **from_pretrained_kwargs,
 ):  
     # Define sharding function using sharding config over mesh
@@ -41,9 +42,12 @@ def load_model_hub(
     # Load model from hub
     with jax.default_device(jax.local_devices(backend="cpu")[0]):
         with Mesh(devices = np.array(jax.local_devices(backend='cpu')[0]).reshape(1,1), axis_names=('data', 'model')):
-            model = model_cls.from_pretrained(
-                model_name, ignore_mismatched_sizes=ignore_mismatched_sizes,from_pt=from_pt, **from_pretrained_kwargs
-            )
+            if dummy_config is not None:
+                model = model_cls(dummy_config)
+            else:
+                model = model_cls.from_pretrained(
+                    model_name, ignore_mismatched_sizes=ignore_mismatched_sizes,from_pt=from_pt, **from_pretrained_kwargs
+                )
             if not half:
                 model.params = model.to_fp32(model.params)
             else:
